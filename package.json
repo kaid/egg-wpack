@@ -1,0 +1,30 @@
+{
+  "name": "egg-wpack",
+  "version": "0.1.1",
+  "description": "简易Eggjs Webpack插件",
+  "main": "index.js",
+  "repository": "https://github.com/kaid/egg-wpack",
+  "author": "Kaid Wong <info@kaid.me>",
+  "license": "MIT",
+  "private": false,
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "eggPlugin": {
+    "name": "wpack"
+  },
+  "keywords": [
+    "egg",
+    "eggPlugin",
+    "egg-plugin",
+    "webpack"
+  ],
+  "dependencies": {
+    "egg": "^2.3.0",
+    "fastify": "^2.1.0",
+    "lodash": "^4.17.11",
+    "webpack": "^4.0.0",
+    "webpack-dev-middleware": "^3.6.0",
+    "webpack-hot-middleware": "^2.24.3"
+  }
+}
