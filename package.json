@@ -1,6 +1,6 @@
 {
   "name": "egg-wpack",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "简易Eggjs Webpack插件",
   "main": "index.js",
   "repository": "https://github.com/kaid/egg-wpack",

@@ -7,6 +7,9 @@ const WebpackDevMiddleware = require('webpack-dev-middleware');
 const WebpackHotMiddleware = require('webpack-hot-middleware');
 const { Actions } = require('./shared');
 
+const WPACK_ASSETS = Symbol('wpackAssets');
+const uncappedReduce = reduce.convert({ cap: false });
+
 class AgentHook {
   constructor(agent) {
     const { configPath, port, configsToWatch } = agent.config.wpack;
@@ -19,7 +22,7 @@ class AgentHook {
     }
 
     this.agent = agent;
-    this.agent.assets = {};
+    this.agent[WPACK_ASSETS] = [];
     // 初始化webpack服务
     this.initWpackServer(configPath, port);
     // 初始化webpack config文件监视器
@@ -27,7 +30,7 @@ class AgentHook {
 
     // 监听app服务
     this.agent.messenger.on(Actions.appReady, () => {
-      this.sendAssets(this.agent.assets);
+      this.sendAssets(this.agent[WPACK_ASSETS]);
     });
   }
 
@@ -64,7 +67,7 @@ class AgentHook {
     }
 
     if (entry.constructor === Object) {
-      webpackConfig.entry = reduce.convert({ cap: false })(
+      webpackConfig.entry = uncappedReduce(
         (result, value, key) => {
           if (value.constructor === String) {
             result[key] = [hmrEntry, value];
@@ -97,12 +100,25 @@ class AgentHook {
     this.devMiddleware = devMiddleware;
 
     devMiddleware.waitUntilValid(stats => {
-      const { publicPath, assets } = stats.toJson({ all: false, assets: true, publicPath: true });
-      const prefix = `http://${host}${publicPath}`;
-      const result = map(({ name }) => `${prefix}${name}`, assets);
+      const { assetsByChunkName, publicPath } = stats.toJson({
+        all: false,
+        assets: true,
+        publicPath: true,
+      });
 
-      this.agent.assets = result;
-      this.sendAssets(result);
+      const prefix = `http://${host}${publicPath}`;
+
+      const wpackAssets = uncappedReduce(
+        (result, value, key) => ({
+          ...result,
+          [key]: map(name => `${prefix}${name}`, value),
+        }),
+        {},
+        assetsByChunkName,
+      );
+
+      this.agent[WPACK_ASSETS] = wpackAssets;
+      this.sendAssets(this.agent[WPACK_ASSETS]);
     });
 
     fast.use(devMiddleware);
@@ -111,7 +127,7 @@ class AgentHook {
     fast.listen(port);
   }
 
-  sendAssets(assets) {
+  sendAssets(assets = []) {
     this.agent.messenger.sendToApp(Actions.assets, assets);
   }
 }

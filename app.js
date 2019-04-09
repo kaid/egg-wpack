@@ -16,8 +16,8 @@ class AppHook {
     // 监听agent发送的assets消息
     app.messenger.on(Actions.assets, assets => {
       app.wpack = {
-        built: Boolean(assets && assets.length),
-        content: assets || [],
+        built: Boolean(assets && Object.keys(assets).length),
+        content: assets || {},
       };
 
       app.assets = app.wpack.content;

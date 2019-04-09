@@ -5,7 +5,7 @@ const Actions = {
 
 const InitialAssets = {
   built: false,
-  content: [],
+  content: {},
 };
 
 module.exports = {
