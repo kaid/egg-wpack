@@ -111,7 +111,10 @@ class AgentHook {
       const wpackAssets = uncappedReduce(
         (result, value, key) => ({
           ...result,
-          [key]: map(name => `${prefix}${name}`, value),
+          [key]: map(
+            name => `${prefix}${name}`,
+            value instanceof Array ? value : [value],
+          ),
         }),
         {},
         assetsByChunkName,
