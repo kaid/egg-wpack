@@ -7,11 +7,16 @@ module.exports = config => async (ctx, next) => {
     return;
   }
 
-  // TODO: hack, temporary fix for https://github.com/webpack/webpack-dev-server/issues/1591
-  if (ctx.url.match(/\/public\/.+\.hot-update\.(json|js)$/)) {
+  if (ctx.url.match(wpack.publicPath)) {
     const { port } = config;
+    const res = await ctx.curl(`http://127.0.0.1:${port}${ctx.url}`);
 
-    const { headers, data } = await ctx.curl(`http://127.0.0.1:${port}${ctx.url}`);
+    const { headers, data } = res;
+
+    if (data) {
+      ctx.status = 200;
+    }
+
     ctx.body = data;
     ctx.set(headers);
     return;

@@ -14,10 +14,11 @@ class AppHook {
     ];
 
     // 监听agent发送的assets消息
-    app.messenger.on(Actions.assets, assets => {
+    app.messenger.on(Actions.assets, ({ publicPath, assets }) => {
       app.wpack = {
-        built: Boolean(assets && Object.keys(assets).length),
+        publicPath,
         content: assets || {},
+        built: Boolean(assets && Object.keys(assets).length),
       };
 
       app.assets = app.wpack.content;

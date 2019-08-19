@@ -12,7 +12,7 @@ const uncappedReduce = reduce.convert({ cap: false });
 
 class AgentHook {
   constructor(agent) {
-    const { configPath, port, configsToWatch } = agent.config.wpack;
+    const { dll, configPath, port, configsToWatch } = agent.config.wpack;
 
     try {
       assert(configPath, '必须设置wpack.configPath');
@@ -21,6 +21,7 @@ class AgentHook {
       console.error(error);
     }
 
+    this.dll = dll;
     this.agent = agent;
     this.agent[WPACK_ASSETS] = [];
     // 初始化webpack服务
@@ -30,7 +31,7 @@ class AgentHook {
 
     // 监听app服务
     this.agent.messenger.on(Actions.appReady, () => {
-      this.sendAssets(this.agent[WPACK_ASSETS]);
+      this.sendAssets(null, this.agent[WPACK_ASSETS]);
     });
   }
 
@@ -84,13 +85,13 @@ class AgentHook {
       );
     }
 
-    const publicPath = webpackConfig.output.publicPath;
+    const { publicPath: pPath } = webpackConfig.output;
     const compiler = webpack(webpackConfig);
 
     this.wpackServer = fast;
 
     const devMiddleware = WebpackDevMiddleware(compiler, {
-      publicPath,
+      publicPath: pPath,
       public: host,
       headers: { 'Access-Control-Allow-Origin': '*' },
     });
@@ -121,8 +122,15 @@ class AgentHook {
       );
 
       this.agent[WPACK_ASSETS] = wpackAssets;
-      this.sendAssets(this.agent[WPACK_ASSETS]);
+      this.sendAssets(publicPath, this.agent[WPACK_ASSETS]);
     });
+
+    if (this.dll) {
+      fast.register(require('fastify-static'), {
+        root: this.dll.dir,
+        prefix: this.dll.public,
+      });
+    }
 
     fast.use(devMiddleware);
     fast.use(hotMiddleware);
@@ -130,8 +138,8 @@ class AgentHook {
     fast.listen(port);
   }
 
-  sendAssets(assets = []) {
-    this.agent.messenger.sendToApp(Actions.assets, assets);
+  sendAssets(publicPath, assets = []) {
+    this.agent.messenger.sendToApp(Actions.assets, { publicPath, assets });
   }
 }
 

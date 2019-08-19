@@ -1,6 +1,6 @@
 {
   "name": "egg-wpack",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "简易Eggjs Webpack插件",
   "main": "index.js",
   "repository": "https://github.com/kaid/egg-wpack",
@@ -22,6 +22,7 @@
   "dependencies": {
     "egg": "^2.3.0",
     "fastify": "^2.1.0",
+    "fastify-static": "^2.5.0",
     "lodash": "^4.17.11",
     "webpack": "^4.0.0",
     "webpack-dev-middleware": "^3.6.0",
